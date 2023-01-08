@@ -33,7 +33,7 @@ library(lmtest)
 \section{Experimental data}
 
 ```{r include=TRUE}
-X2022_03_10_17_20_36 <- read_csv("2022-03-14-15-27-49.csv")
+X2022_03_10_17_20_36 <- read_csv("data/2022-03-14-15-27-49.csv")
 AE <- X2022_03_10_17_20_36[ 120: 300, ]
 AE <- cbind( AE$`657 [m/s]`, AE$`076 [m/s]`)
 colnames(AE) <- c("velE", "velA")
@@ -56,7 +56,7 @@ g.dlm
 Also the punctual distribution over time were simulated for point A for the turbulent flow
 
 ```{r include=TRUE}
-PTdata <- read.csv("Puntuals 180s - Full 1.csv", dec=",", header=TRUE, stringsAsFactors=FALSE)
+PTdata <- read.csv("data/Puntuals 180s - Full 1.csv", dec=",", header=TRUE, stringsAsFactors=FALSE)
 PT <- as.data.frame(cbind(PTdata$X.1[4:362]*10^(-16), PTdata$X.3[4:362]*10^(-16), PTdata$X.5[4:362]*10^(-16), PTdata$X.7[4:362]*10^(-16)))
 colnames(PT) <- c("velA05", "velC05", "velC06", "velA06")
 row_odd <- seq_len(nrow(PT)) %% 2              # Create row indicator
@@ -112,7 +112,7 @@ experimentalFilter  <- data.frame(x = index(velA[60:179]),
                                              mmA$mitjana[59:178]), 
                         Data = c(rep("True velocity point A", 120), 
                                  rep("Kalman Filtered using MA(2) w/mean", 120),
-                                 rep("Simulated velocity point A", 120), 
+                                 rep("Simulated velocity point A", 120) 
                                  ))
 ggplot(experimentalFilter, aes(x, values, col= Data, linetype=Data))+geom_line(size=0.5)+
   scale_color_manual(values= c("blue",  "deepskyblue", "navy")) +
