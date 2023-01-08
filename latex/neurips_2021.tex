@@ -108,6 +108,8 @@
 
 \section{Introduction}
 
+Mathematically, we can reproduce the train and test approaches of a Machine Learning model. Theoretically, by considering the maximization of the joint probability of different models, conditioned to the dataset given we conduct the training process of the model. Computing now the conditional probability of the predicted values using this distribution, we complete the testing part of the model. In this paper, we apply machine learning to an experimental time series. The corresponding training process will be described by the Maximum likelihood estimation of the parameters, while the prediction and validation of the results may follow the Data Assimilation approach, as described by the Kalman Filter.  
+
 The purpose of DA is to determine the best possible forecast state using new real-time \textbf{observations} and short-range \textbf{predictions}. Intuitively, an initial forecast is modelled using the governing equations of the physics system. With this initial distribution, the next-step variable is predicted along with its corresponding covariance matrix (to estimate the forecast error). The groundbreaking idea of the DA approach is an \textbf{additional update step} that uses new real world \textbf{observations} on an experimental system, to improve the predicted values and obtain an analysed state that approximates more accurately the distribution of the real variable, called the \textbf{true state}. The improved predicted state is used on the \textbf{subsequent} time step with new real-time observations.
 
 In order to understand the Kalman recursion we may first need to have a general idea on how to treat time series. We address this in terms of SSM in the following subsection. 
@@ -153,7 +155,26 @@ The hyper-parameters, in this case $\theta_1, \theta_2$ are statistically estima
 
 \subsubsection{MA(2): SSM representation}\label{ma2_ssm}
 
-Once known the time series fitted distribution $(\theta_1^*, \theta_2^*)$, we can find a SSM formulation. There are many possible representations for an ARIMA process, however following this example of a MA(2), an intuitive and possible SSM representation is given by the following following observation equation \ref{eq:prop_obs} and state equation \ref{eq:prop_state}:
+Once known the time series fitted distribution $(\theta_1^*, \theta_2^*)$, we can find a SSM formulation. There are many possible representations for an ARIMA process, however following this example of a MA(2), an intuitive and possible SSM representation is given by the following following observation equation \ref{eq:prop_obs_th} and state equation \ref{eq:prop_state_th}:
+\begin{equation}\label{eq:prop_obs_th}
+     Y_t = ( 1, \theta_1, \theta_2 ) \begin{pmatrix}
+    X_{t} \\ X_{t-1} \\ X_{t-2}
+    \end{pmatrix} + (0) =: M \mathbf{X}_t + W
+ \end{equation} \begin{equation}\label{eq:prop_state_th}
+     \bm{X}_{t+1} := \begin{pmatrix}
+     X_{t+1} \\ X_{t} \\ X_{t-1}
+     \end{pmatrix} = \begin{pmatrix}
+      0 & 0 & 0 \\ 1 & 0  & 0 \\ 0 & 1 & 0 
+     \end{pmatrix}
+     \begin{pmatrix}
+     X_{t} \\ X_{t-1} \\ X_{t-2}
+     \end{pmatrix} + (1,0,0) \begin{pmatrix}
+     \varepsilon_{t} \\ \varepsilon_{t-1} \\ \varepsilon_{t-2}
+     \end{pmatrix}  = F \mathbf{X}_t + V \Vec{\varepsilon}_t
+ \end{equation}
+Being $W$ conceivable as white noise with mean 0 and covariance matrix $\mathbf{0}_{3}$, and $\{\varepsilon_t\} \sim WN(0, \sigma^2)$. 
+
+Since the SSM representation is not unique, another possible formulation, not as intuitive and equivalent to the previous one is described as follows:
 \begin{equation}\label{eq:prop_obs}
      Y_t = ( 1, 0, 0 ) \begin{pmatrix}
     X_{t} \\ X_{t-1} \\ X_{t-2}
@@ -261,7 +282,14 @@ Essentially, the turbulent flow is modeled assuming the deviation from a paralle
 
 \subsection{Methodology}
 
-First, we define a physical model based on a wind flow in a finite cylindrical pipe, with associated initial and boundary conditions on the spatial domain using the \texttt{COMSOL} CFD \hyperlink{https://www.comsol.com/cfd-module}{module}. The boundary conditions are given by zero velocity at the upper and lower pipe walls, atmospheric pressure at the outlet and a white noise distributed incoming velocity through the inlet (entrance region at the pipe's edge). The equations governing the system are assumed to be the Reynolds-averaged Navier Stokes (RANS). Of course, the real flow profile has some deviations from the so-called Poiseuille solution of the RANS. This is why DA will prove to be necessary.
+First, we define a physical model based on a wind flow in a finite cylindrical pipe, with associated initial and boundary conditions on the spatial domain using the \texttt{COMSOL} CFD \hyperlink{https://www.comsol.com/cfd-module}{module}, Figure \ref{fig:flow}. The boundary conditions are given by zero velocity at the upper and lower pipe walls, atmospheric pressure at the outlet and a white noise distributed incoming velocity through the inlet (entrance region at the pipe's edge). The equations governing the system are assumed to be the Reynolds-averaged Navier Stokes (RANS). Of course, the real flow profile has some deviations from the so-called Poiseuille solution of the RANS. This is why DA will prove to be necessary.
+
+\begin{figure}[!ht]
+  \centering
+  \fbox{\includegraphics[width=0.7\textwidth]{img/3TurbulentTransientPlot120s.png}}
+  \caption{(CFD) fluid profile, as obtained by the Turbulent regime based \texttt{COMSOL} simulation on the whole domain of the cylindrical pipe.}
+  \label{fig:flow}
+\end{figure}
 
 Yet, on the one hand, the observation vector, $\bm{Y}_t$, is given by the flow velocity measured experimentally at $p=1$ observation point of the wind flow domain. On the other hand, the state vector, $\bm{X}_t$, represents the velocity flow representation and it is assumed to be distributed as a certain ARIMA, whose exact $p, s, q$ hyper-parameters are found such as the ones adjusting the best the CFD-simulated timeseries in that point. Specifically, the \texttt{COMSOL} CFD simulations are launched at a set of $k\gg p=1$ points and, then, the $\bm{X}_t$ distribution is found out using the simulated timeseries interpolated at the $p=1$ experimental point.  
 % In order to compute the study the transversal velocity on the cylinder axis was measured by two anemometers simultaneously placed at two central points of the pipe, point $B$ and point $D$. These samples correspond to the observation data used on the implementation $\mathbf{Y}_t = (Y_t^{(B)}, Y_t^{(D)})$. Additionally, a point next to the entrance region, point $A$ is used as a boundary condition imposed on the CFD simulations implemented on COMSOL, in order to get a first estimate of the real velocity profile. The distribution obtained remains far from the real one, since the ideal assumptions used on the simulation do not hold on the experimental setup, however, by forcing the real distribution of the velocity next to the generator as a boundary condition, the distribution obtained falls in the uncertainty interval, as shown in Figure \ref{fig:implem}. \\
@@ -311,7 +339,7 @@ Finally, the KF algorithm is implemented using:
 
 \section{Experiments and results}\label{results}
 
-The code\footnote{The code can be found at the authors' repository: \hyperlink{https://github.com/gcastro-98/kf-data-assimilation}{https://github.com/gcastro-98/kf-data-assimilation}} was implemented in R, instead of Python, due to the existence of certain packages in this language that highly simplifies several different steps. In particular, the main obtained results are highlighted below: 
+The code\footnote{The code can be found at the authors' repository: \hyperlink{https://github.com/gcastro-98/kf-data-assimilation}{https://github.com/gcastro-98/kf-data-assimilation}} was implemented in R, instead of Python, due to the existence of certain packages in this language that highly simplifies several different steps. %In particular, the main obtained results are highlighted below: 
 \begin{itemize}
     \item The best ARIMA model adjusting the simulated time series was found using the \texttt{auto.arima} library following the AIC optimization process described at \ref{arima}. The MA(2) process was found as the suitable one with $(\texttt{log likelihood}, \texttt{AIC}, \texttt{BIC}) = (400.76, -795.53, -787.16)$. 
 
@@ -320,16 +348,17 @@ The code\footnote{The code can be found at the authors' repository: \hyperlink{h
     \begin{equation}\label{eq:initials_exp}
          X_0 = ( 0, 0, 0)^T, \quad \Sigma_0 = \mathbb{I}_3 \sigma_0     
     \end{equation} with $\sigma_0 = 10^7$. 
-    Then, in this experimental case, the best SSM parameters $M_t$, $F_t$, $R_t$ \& $Q_t$ found were constant in time and found with values:
-    \begin{equation}
-        M_t = ( 1, 0, 0) \ ; R_t = (0) \ ;\ F_t = \begin{pmatrix}
-      0 & 1 & 0 \\ 0 & 0  & 1 \\ 0 & 0 & 0 
-     \end{pmatrix} \ ;\  Q_t = \begin{pmatrix}
-         1 & \theta_1^* & \theta_2^* \\
-      \theta_1^* & {\theta_1^*}^2 & \theta_1^* \theta_2^* \\ 
-      \theta_2^* & \theta_1^* \theta_2^* & {\theta_2^*}^2
-     \end{pmatrix}
-    \end{equation} Note this is the same SSM representation than \ref{ma2_ssm}.
+    Then, in this experimental case, the best SSM parameters $M_t$, $F_t$, $R_t$ \& $Q_t$ found were constant in time and described by the SSM as given by the observation and state equations \ref{eq:prop_obs}, \ref{eq:prop_state}. 
+    %and found with values:
+    %\begin{equation}
+    %    M_t = ( 1, 0, 0) \ ; R_t = (0) \ ;\ F_t = \begin{pmatrix}
+     % 0 & 1 & 0 \\ 0 & 0  & 1 \\ 0 & 0 & 0 
+     %\end{pmatrix} \ ;\  Q_t = %\begin{pmatrix}
+      %   1 & \theta_1^* & \theta_2^* \\
+      %\theta_1^* & {\theta_1^*}^2 & \theta_1^* \theta_2^* \\ 
+      %\theta_2^* & \theta_1^* \theta_2^* & {\theta_2^*}^2
+     %\end{pmatrix}
+    %\end{equation} Note this is the same SSM representation than \ref{ma2_ssm}.
     \item Finally, using the former SSM, the KF is implemented as described by the Kalman recursions given by the Theorems \ref{teor:forecast} and \ref{teor:update}. In our case, the \texttt{dlmFilter} routine of the \texttt{dlm} library was leveraged. The filtered distribution was obtained using as the 'displaced' observations $\bm{Y}_t - \mu $, which after trending it again adding $\mu$, is plotted in Figure \ref{fig:implem}.
 \end{itemize}
 
@@ -366,7 +395,22 @@ The code\footnote{The code can be found at the authors' repository: \hyperlink{h
   \label{fig:implem}
 \end{figure}
 
-Of course, as it can be appreciated in Figure \ref{fig:implem}, the KF-filtered time series does not adjust completely and perfectly the observations, but does a much better job than the CFD simulation in terms of bias, variance and correlation.
+Of course, as it can be appreciated in Figure \ref{fig:implem}, the KF-filtered time series does not adjust completely and perfectly the observations, but does a much better job than the CFD simulation in terms of the MSE and variance, Table \ref{table}%, bias, variance and correlation. 
+
+\begin{table}
+   \caption{Validation of the results obtained}
+   \label{table}
+   \centering
+   \begin{tabular}{lll}
+     \toprule
+     %\cmidrule(r){1-2}
+     Time seies     & MSE     & Standard deviation \\
+     \midrule
+     KF-filtered & $2.645304\cdot 10^{-5}$  & 0.00980567     \\
+     Simulated     & 0.001193489 & 0.01162412    \\
+     \bottomrule
+   \end{tabular}
+ \end{table}
 
 % \subsection{Tables}
 % All tables must be centered, neat, clean and legible.  The table number and title always appear before the table. 
