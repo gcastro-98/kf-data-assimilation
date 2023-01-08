@@ -120,3 +120,12 @@ ggplot(experimentalFilter, aes(x, values, col= Data, linetype=Data))+geom_line(s
   theme(panel.background = element_rect(fill = "white", colour = "grey50"))+
   xlab("Time (s)") + ylab("Velocity (m/s)")
 ```
+
+```{r include=TRUE}
+mean((A3mean[59:178]- velA[58:177])^2)
+mean((mmA$mitjana[59:178]- velA[58:177])^2)
+sd(mmA$mitjana[59:178])
+sd(A3mean[59:178])
+acf(A3mean[59:178])
+acf(mmA$mitjana[59:178])
+```
