@@ -104,7 +104,7 @@ A3mean <-  model.filteredA3$f + mean(velA)  # this is a little tricky; I'll comm
 
 \section{Results}
 
-```{r echo=TRUE, fig.width=6, fig.height=3, fig.cap= ("\\label{fig:fig3}Experimental and simulated flow velocity for the measurement points over time and filtered data using the Kalman Filter with the simulated data set update. Experimental configuration with diameter of 0.04m, and simulated data for the configuration of turbulent flow with 0.04m diameter. ")}
+```{r echo=TRUE, fig.width=6, fig.height=3, fig.cap= ("\\label{fig:fig3}Experimental and simulated flow velocity for the measurement points over time and filtered data using the Kalman Filter with the simulated data set update. Experimental configuration with diameter of 0.04m, and simulated data for the configuration of turbulent flow with 0.04m diameter. ") }
 
 experimentalFilter  <- data.frame(x = index(velA[60:179]), 
                                   values = c(velA[58:177], # already shifted! 
