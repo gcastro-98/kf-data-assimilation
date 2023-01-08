@@ -155,7 +155,7 @@ The hyper-parameters, in this case $\theta_1, \theta_2$ are statistically estima
 
 Once known the time series fitted distribution $(\theta_1^*, \theta_2^*)$, we can find a SSM formulation. There are many possible representations for an ARIMA process, however following this example of a MA(2), an intuitive and possible SSM representation is given by the following following observation equation \ref{eq:prop_obs} and state equation \ref{eq:prop_state}:
 \begin{equation}\label{eq:prop_obs}
-     Y_t = ( 1, \theta_1, \theta_2) \begin{pmatrix}
+     Y_t = ( 1, 0, 0 ) \begin{pmatrix}
     X_{t} \\ X_{t-1} \\ X_{t-2}
     \end{pmatrix} + (0) =: M \mathbf{X}_t + W   
  \end{equation} \begin{equation}\label{eq:prop_state}
